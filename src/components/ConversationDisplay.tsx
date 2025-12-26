@@ -71,9 +71,9 @@ export function ConversationDisplay({
 
                         {message.role === "assistant" && message.audioUrl && (
                             <AudioPlayer
-                                audioUrl={message.audioUrl}
+                                src={message.audioUrl}
                                 autoPlay={message.id === messages[messages.length - 1]?.id}
-                                onPlaybackComplete={onAudioComplete}
+                                onEnded={onAudioComplete}
                             />
                         )}
                     </div>

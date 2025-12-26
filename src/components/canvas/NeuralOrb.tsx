@@ -11,7 +11,8 @@ interface NeuralOrbProps {
 
 export function NeuralOrb({ active = false }: NeuralOrbProps) {
     const meshRef = useRef<THREE.Mesh>(null);
-    const materialRef = useRef<THREE.MeshDistortMaterial>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const materialRef = useRef<any>(null);
 
     useFrame((state) => {
         if (meshRef.current) {

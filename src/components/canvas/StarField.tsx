@@ -51,15 +51,11 @@ export function StarField() {
             <bufferGeometry>
                 <bufferAttribute
                     attach="attributes-position"
-                    count={count}
-                    array={particles.position}
-                    itemSize={3}
+                    args={[particles.position, 3]}
                 />
                 <bufferAttribute
                     attach="attributes-color"
-                    count={count}
-                    array={particles.color}
-                    itemSize={3}
+                    args={[particles.color, 3]}
                 />
             </bufferGeometry>
             <pointsMaterial
