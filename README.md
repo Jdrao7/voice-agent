@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎙️ Nova - AI Voice Assistant
 
-## Getting Started
+A turn-based AI voice agent built with Next.js that allows you to speak to an AI and hear intelligent responses. Powered by Groq's free API for speech-to-text, LLM reasoning, and text-to-speech.
 
-First, run the development server:
+![Nova Voice Agent](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
+![Groq](https://img.shields.io/badge/Groq-Free%20API-orange?style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Features
+
+- **🎤 Voice Input** - Push-to-talk microphone recording (2-10 seconds)
+- **📝 Speech-to-Text** - Groq Whisper transcription
+- **🧠 AI Agent** - LLaMA 3.3 70B for intelligent responses
+- **🔊 Text-to-Speech** - PlayAI natural voice synthesis
+- **💬 Conversation History** - Maintains context across turns
+- **🎨 Modern UI** - Dark glassmorphism design with smooth animations
+
+## 🚀 Quick Start
+
+### 1. Get a Groq API Key (Free!)
+
+1. Visit [console.groq.com](https://console.groq.com)
+2. Create an account and generate an API key
+3. It's completely free with generous rate limits!
+
+### 2. Set Up Environment
+
+Create a `.env.local` file in the project root:
+
+```env
+GROQ_API_KEY=gsk_your_api_key_here
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Install & Run
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Start development server
+npm run dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+## 🏗️ Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+Browser
+  ↓ (audio blob)
+Next.js API (/api/voice)
+  ↓
+Groq Whisper (STT)
+  ↓
+Groq LLaMA 3.3 70B (LLM)
+  ↓
+Groq PlayAI TTS
+  ↓
+Audio Response
+  ↓
+Browser Playback
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+```
+src/
+├── app/
+│   ├── api/voice/route.ts    # Voice pipeline API
+│   ├── globals.css           # Modern dark theme
+│   ├── layout.tsx            # Root layout
+│   └── page.tsx              # Main UI
+├── components/
+│   ├── VoiceRecorder.tsx     # Push-to-talk component
+│   ├── AudioPlayer.tsx       # Audio playback
+│   └── ConversationDisplay.tsx
+├── hooks/
+│   └── useVoiceRecorder.ts   # MediaRecorder hook
+└── lib/
+    ├── stt.ts                # Speech-to-text service
+    ├── llm.ts                # LLM agent service
+    ├── tts.ts                # Text-to-speech service
+    └── types.ts              # Shared types & schemas
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎯 Technical Constraints (By Design)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Constraint | Reason |
+|------------|--------|
+| ❌ No WebRTC | Serverless compatibility |
+| ❌ No streaming | Simplicity & cost control |
+| ❌ No telephony | Personal project scope |
+| ✅ Serverless-safe | Reliable on Vercel |
+| ✅ Turn-based | Predictable UX |
+
+## 📊 Groq Free Tier Limits
+
+| Service | Model | Requests/Min | Requests/Day |
+|---------|-------|--------------|--------------|
+| STT | whisper-large-v3-turbo | 20 | 2,000 |
+| TTS | playai-tts | 10 | 100 |
+| LLM | llama-3.3-70b-versatile | 30 | 14,400 |
+
+## 🚢 Deploy to Vercel
+
+1. Push to GitHub
+2. Import to [Vercel](https://vercel.com)
+3. Add `GROQ_API_KEY` environment variable
+4. Deploy!
+
+## 📝 One-Line Resume Description
+
+> Built a serverless AI voice assistant using Next.js, integrating speech-to-text, LLM reasoning, and text-to-speech in a production-safe, deployable architecture using Groq's free API.
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **AI Services**: Groq (Whisper, LLaMA, PlayAI)
+- **Validation**: Zod
+- **Icons**: Lucide React
+
+## 📄 License
+
+MIT

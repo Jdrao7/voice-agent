@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* The Void Palette */
+  --color-nova-bg: #030014;
+  /* Deep space violet */
+  --color-nova-glass: rgba(20, 20, 35, 0.4);
+  --color-nova-border: rgba(255, 255, 255, 0.1);
+  --color-nova-purple: #7000ff;
+  --color-nova-cyan: #00f0ff;
+  --color-nova-white: #ffffff;
+  --color-nova-dim: rgba(255, 255, 255, 0.4);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Typography */
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Animations */
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
   }
 }
 
+/* Base Reset */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-nova-bg);
+  color: var(--color-nova-white);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  /* No scrolling in the spatial UI */
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Utilities */
+@layer utilities {
+  .hud-panel {
+    @apply bg-nova-glass backdrop-blur-2xl border border-nova-border rounded-3xl shadow-2xl;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(112, 0, 255, 0.5);
+  }
 }
