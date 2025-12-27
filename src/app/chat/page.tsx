@@ -165,9 +165,9 @@ export default function Page() {
         volume={volume}
       />
 
-      {/* Title Overlay */}
-      <div className="pointer-events-none absolute top-8 left-8">
-        <h1 className="text-4xl font-bold tracking-tighter text-white/90">
+      {/* Title Overlay - hidden on mobile */}
+      <div className="pointer-events-none absolute top-4 md:top-8 left-4 md:left-8 hidden md:block">
+        <h1 className="text-3xl lg:text-4xl font-bold tracking-tighter text-white/90">
           NOVA
           <span className="text-xs align-top text-nova-purple ml-2 font-mono">CORE V.2</span>
         </h1>

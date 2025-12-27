@@ -6,7 +6,7 @@ interface ImmersiveLayoutProps {
 
 export function ImmersiveLayout({ children }: ImmersiveLayoutProps) {
     return (
-        <div className="relative h-screen w-screen overflow-hidden bg-nova-bg">
+        <div className="page-immersive relative bg-nova-bg">
             {/* 3D Scene Container (Background) */}
             <div className="absolute inset-0 z-0">
                 {/* We will mount the Canvas here in page.tsx to keep context clean */}

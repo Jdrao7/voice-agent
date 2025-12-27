@@ -34,8 +34,8 @@ export function Dock({
     };
 
     return (
-        <div className="pointer-events-auto absolute bottom-8 left-1/2 -translate-x-1/2 transform">
-            <div className="flex flex-col items-center gap-4">
+        <div className="pointer-events-auto absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 transform safe-bottom">
+            <div className="flex flex-col items-center gap-3 md:gap-4">
                 {/* Volume Visualizer Ring */}
                 <div className="relative">
                     {/* Outer glow ring based on volume */}
@@ -51,12 +51,12 @@ export function Dock({
                         />
                     )}
 
-                    {/* Main button */}
+                    {/* Main button - smaller on mobile */}
                     <button
                         onClick={onToggleListening}
                         disabled={isProcessing}
                         className={`
-                            relative flex h-24 w-24 items-center justify-center rounded-full
+                            relative flex h-20 w-20 md:h-24 md:w-24 items-center justify-center rounded-full
                             transition-all duration-300 transform
                             ${isProcessing ? "cursor-wait opacity-70" : "cursor-pointer hover:scale-105 active:scale-95"}
                             ${isRecording
@@ -68,15 +68,15 @@ export function Dock({
                         `}
                     >
                         {/* Inner decorative ring */}
-                        <div className="absolute inset-2 rounded-full border-2 border-white/20" />
+                        <div className="absolute inset-1.5 md:inset-2 rounded-full border-2 border-white/20" />
 
-                        {/* Icon */}
+                        {/* Icon - smaller on mobile */}
                         {isProcessing ? (
-                            <Loader2 className="h-10 w-10 text-white animate-spin" />
+                            <Loader2 className="h-8 w-8 md:h-10 md:w-10 text-white animate-spin" />
                         ) : isListening ? (
-                            <MicOff className="h-10 w-10 text-white" />
+                            <MicOff className="h-8 w-8 md:h-10 md:w-10 text-white" />
                         ) : (
-                            <Mic className="h-10 w-10 text-white" />
+                            <Mic className="h-8 w-8 md:h-10 md:w-10 text-white" />
                         )}
 
                         {/* Recording pulse animation */}
@@ -89,12 +89,12 @@ export function Dock({
                     </button>
                 </div>
 
-                {/* Status Label */}
-                <div className="rounded-xl border border-nova-border bg-nova-glass px-6 py-3 backdrop-blur-xl">
-                    <div className="text-xs font-mono uppercase tracking-widest text-gray-500 mb-1 text-center">
+                {/* Status Label - more compact on mobile */}
+                <div className="rounded-xl border border-nova-border bg-nova-glass px-4 md:px-6 py-2 md:py-3 backdrop-blur-xl">
+                    <div className="text-[10px] md:text-xs font-mono uppercase tracking-widest text-gray-500 mb-0.5 md:mb-1 text-center">
                         STATUS
                     </div>
-                    <div className={`text-sm font-bold tracking-wider text-center ${getStatusColor()}`}>
+                    <div className={`text-xs md:text-sm font-bold tracking-wider text-center ${getStatusColor()}`}>
                         {getStatus()}
                     </div>
                 </div>
