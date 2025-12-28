@@ -2,7 +2,7 @@
 // Accepts Vapi Server Message format with toolCallList
 
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder, getOrdersForCall } from "@/lib/database";
+import { createOrder, getOrdersForCall, createCall, getCall } from "@/lib/database";
 
 // Vapi Tool Call structure - handles both formats
 interface VapiToolCall {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
             // Only handle create_order tool
             if (toolName === "create_order") {
-                const { call_id, order_details } = args as {
+                const { call_id: argsCallId, order_details } = args as {
                     call_id?: string;
                     order_details?: {
                         items?: string;
@@ -80,13 +80,28 @@ export async function POST(request: NextRequest) {
                     };
                 };
 
-                // Use call_id from args, or fall back to the call object
-                const finalCallId = call_id || callId;
+                // PRIORITY: Use callId from message.call.id (real Vapi UUID), fallback to args
+                // This fixes the UUID error when args.call_id is a placeholder like "1" or "current_call_id"
+                const finalCallId = callId || argsCallId;
+
+                console.log(`[Orders API] Using call_id: ${finalCallId} (from message: ${callId}, from args: ${argsCallId})`);
 
                 if (!finalCallId) {
                     results.push({
                         toolCallId,
                         result: "Error: No call ID provided. Please try again."
+                    });
+                    continue;
+                }
+
+                // Validate UUID format
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                if (!uuidRegex.test(finalCallId)) {
+                    console.log(`[Orders API] Invalid UUID format: ${finalCallId}, using message.call.id or generating new`);
+                    // If no valid UUID, we can't create order - return error
+                    results.push({
+                        toolCallId,
+                        result: "I'm having trouble processing this order. Could you please try again?"
                     });
                     continue;
                 }
@@ -116,7 +131,14 @@ export async function POST(request: NextRequest) {
                 }
 
                 try {
-                    // Save to Supabase
+                    // Ensure call exists in database (auto-create if needed)
+                    const existingCall = await getCall(finalCallId);
+                    if (!existingCall) {
+                        console.log(`[Orders API] Call ${finalCallId} not found, creating it...`);
+                        await createCall({ id: finalCallId });
+                    }
+
+                    // Save order to Supabase
                     const order = await createOrder({
                         call_id: finalCallId,
                         order_details: {
