@@ -47,6 +47,16 @@ interface VapiMessage {
     };
 }
 
+// Vapi Tool Call structure (for tool-calls event)
+interface VapiToolCall {
+    id: string;
+    type: "function";
+    function: {
+        name: string;
+        arguments: Record<string, unknown> | string;
+    };
+}
+
 export async function POST(request: NextRequest) {
     try {
         const message: VapiMessage = await request.json();
@@ -136,16 +146,99 @@ export async function POST(request: NextRequest) {
             // Function/Tool calls from assistant
             case "function-call":
             case "tool-calls": {
-                console.log("[VAPI] Function call:", message.functionCall);
+                // Extract tool calls from the Vapi Server Message structure
+                // Vapi sends toolCallList array in body.message
+                const toolCallList = (message as unknown as { message?: { toolCallList?: VapiToolCall[] } }).message?.toolCallList
+                    || (message as unknown as { toolCallList?: VapiToolCall[] }).toolCallList
+                    || [];
 
-                // Handle custom functions here
-                // Example: if (message.functionCall?.name === "create_order") {...}
+                console.log("[VAPI] Tool calls received:", JSON.stringify(toolCallList, null, 2));
 
-                return NextResponse.json({
-                    results: [{
-                        result: "Function executed successfully",
-                    }]
-                });
+                // Process each tool call and collect results
+                const results: { toolCallId: string; result: string }[] = [];
+
+                for (const toolCall of toolCallList) {
+                    const { id: toolCallId, function: func } = toolCall;
+
+                    // Handle arguments - may be string or object
+                    const args = typeof func.arguments === 'string'
+                        ? JSON.parse(func.arguments)
+                        : func.arguments;
+
+                    console.log(`[VAPI] Processing tool: ${func.name}`, args);
+
+                    try {
+                        switch (func.name) {
+                            case "create_order": {
+                                const { call_id, order_details } = args;
+                                const { items, total, delivery_address } = order_details || {};
+
+                                console.log(`[VAPI] Creating order for call ${call_id}:`, { items, total, delivery_address });
+
+                                // Save to database if Supabase is configured
+                                if (isSupabaseConfigured() && call_id) {
+                                    const { createOrder } = await import("@/lib/database");
+                                    await createOrder({
+                                        call_id,
+                                        order_details: order_details || { items, total, delivery_address },
+                                    });
+                                }
+
+                                results.push({
+                                    toolCallId,
+                                    result: `Order confirmed! ${items || 'Your items'} totaling ${total || 'the amount'} will be delivered to ${delivery_address || 'your address'}.`
+                                });
+                                break;
+                            }
+
+                            case "escalate_to_human": {
+                                const { reason, urgency } = args;
+
+                                if (isSupabaseConfigured() && message.call?.id) {
+                                    const { createHandoff, updateCallStatus } = await import("@/lib/database");
+                                    await createHandoff({
+                                        call_id: message.call.id,
+                                        reason: reason || "Customer requested human agent",
+                                        customer_sentiment: urgency || "normal",
+                                    });
+                                    await updateCallStatus(message.call.id, "escalated");
+                                }
+
+                                results.push({
+                                    toolCallId,
+                                    result: "I'm connecting you with a human representative now. Please hold."
+                                });
+                                break;
+                            }
+
+                            case "check_order_status": {
+                                const { order_id } = args;
+                                // TODO: Implement order status lookup
+                                results.push({
+                                    toolCallId,
+                                    result: `Order ${order_id} is being processed and will be ready soon.`
+                                });
+                                break;
+                            }
+
+                            default:
+                                console.log(`[VAPI] Unknown tool: ${func.name}`);
+                                results.push({
+                                    toolCallId,
+                                    result: `Tool ${func.name} executed successfully.`
+                                });
+                        }
+                    } catch (toolError) {
+                        console.error(`[VAPI] Tool error for ${func.name}:`, toolError);
+                        results.push({
+                            toolCallId,
+                            result: "I encountered an issue processing that request. Let me try another way."
+                        });
+                    }
+                }
+
+                // CRITICAL: Return results with toolCallId so Vapi knows which calls were handled
+                return NextResponse.json({ results });
             }
 
             // Speech updates (optional)
