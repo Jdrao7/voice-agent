@@ -16,7 +16,7 @@ import {
     PhoneOff,
     Package,
 } from "lucide-react";
-import { Call, CallStatus } from "@/lib/types";
+import { Call, CallStatus, Order } from "@/lib/types";
 
 // Mock data - replace with real API calls when Supabase is configured
 const MOCK_CALLS: Call[] = [
@@ -90,6 +90,8 @@ export default function DashboardPage() {
     const [filter, setFilter] = useState<CallStatus | "all">("all");
     const [lastUpdate, setLastUpdate] = useState(new Date());
     const [isRealtime, setIsRealtime] = useState(false);
+    const [orderDetails, setOrderDetails] = useState<Order | null>(null);
+    const [loadingOrder, setLoadingOrder] = useState(false);
 
     // Load calls from API (initial load)
     const loadCalls = useCallback(async () => {
@@ -154,6 +156,29 @@ export default function DashboardPage() {
             cleanup.then((fn) => fn?.());
         };
     }, [loadCalls]);
+
+    // Fetch order details when selecting a call with order_made status
+    useEffect(() => {
+        if (selectedCall?.status === "order_made") {
+            setLoadingOrder(true);
+            fetch(`/api/orders?call_id=${selectedCall.id}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.orders && data.orders.length > 0) {
+                        setOrderDetails(data.orders[0]);
+                    } else {
+                        setOrderDetails(null);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Failed to fetch order:", err);
+                    setOrderDetails(null);
+                })
+                .finally(() => setLoadingOrder(false));
+        } else {
+            setOrderDetails(null);
+        }
+    }, [selectedCall]);
 
     const filteredCalls = filter === "all" ? calls : calls.filter((c) => c.status === filter);
     const escalatedCount = calls.filter(c => c.status === "escalated").length;
@@ -384,6 +409,54 @@ export default function DashboardPage() {
                                                 <span className="text-xs text-gray-400 uppercase tracking-wider">AI Summary</span>
                                             </div>
                                             <p className="text-sm text-white">{selectedCall.summary}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Order Details */}
+                                    {selectedCall.status === "order_made" && (
+                                        <div className="mt-4 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <Package className="h-4 w-4 text-purple-400" />
+                                                <span className="text-xs text-purple-400 uppercase tracking-wider">Order Details</span>
+                                            </div>
+                                            {loadingOrder ? (
+                                                <div className="flex items-center gap-2 text-gray-400">
+                                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                                    <span className="text-sm">Loading order...</span>
+                                                </div>
+                                            ) : orderDetails?.order_details ? (
+                                                <div className="space-y-3">
+                                                    <div className="flex items-start gap-3">
+                                                        <ShoppingCart className="h-4 w-4 text-purple-400 mt-0.5" />
+                                                        <div>
+                                                            <span className="text-xs text-gray-400 block">Items</span>
+                                                            <span className="text-sm text-white">
+                                                                {(orderDetails.order_details as { items?: string }).items || "N/A"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3">
+                                                        <span className="text-purple-400 text-sm font-bold">$</span>
+                                                        <div>
+                                                            <span className="text-xs text-gray-400 block">Total</span>
+                                                            <span className="text-sm text-white font-medium">
+                                                                {(orderDetails.order_details as { total?: string }).total || "N/A"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3">
+                                                        <span className="text-purple-400">📍</span>
+                                                        <div>
+                                                            <span className="text-xs text-gray-400 block">Delivery Address</span>
+                                                            <span className="text-sm text-white">
+                                                                {(orderDetails.order_details as { delivery_address?: string }).delivery_address || "N/A"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-gray-400">No order details available</p>
+                                            )}
                                         </div>
                                     )}
 
