@@ -1,15 +1,40 @@
+/* Import Google Sans-like font - must be at top */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --background-light: #f8fafc;
+    --foreground-light: #0f172a;
+    --background-dark: #0a0a0f;
+    --foreground-dark: #ffffff;
+}
+
 body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Light theme pages get light backgrounds */
+.bg-gradient-to-br {
+    color: #0f172a;
+}
+
+/* Dashboard dark theme override */
+.dashboard-dark {
     background-color: #0a0a0f;
     color: white;
 }
 
-/* Glass panel */
+/* Glass panel for dark theme */
 .glass {
     @apply bg-white/5 border border-white/10 backdrop-blur-xl;
+}
+
+/* Glass panel for light theme */
+.glass-light {
+    @apply bg-white/70 border border-slate-200/50 backdrop-blur-xl;
 }
 
 /* Scrollbar hide */
